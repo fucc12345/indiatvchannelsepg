@@ -3,366 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enhanced EPG Viewer - Live TV Schedule</title>
+  <title>INDIAN TV CHANNELS EPG TELEGUIDE</title>
 
   <!-- SEO Meta Tags -->
-  <meta name="description" content="A fast and modern EPG viewer for Indian TV channels. View live schedules for Tata Play, JioTV, and more. Find now playing, upcoming, and catch-up programs for all major channels.">
-  <meta name="keywords" content="tata play epg, indian tv channels epg, tv channels epg, tata play epg india, live schedule tv channels, tv channels schedule, hindi tv channel schedule, telugu tv channels, maa tv schedule, set schedule, indian channels, indian live tv, indian tv, tv schedule, tata play, tata play schedule, tata plyay telugu, dth, sundirect, jiotv schedule, tsaio schedule, live tv schedule, india live tv, india news, live epg, tsepg, github tv schedule, github, vercel tv schedule, vercel tata play">
+  <meta name="description" content="A fast and modern EPG Teleguide for Indian TV channels. View live schedules for Tata Play, Sun Direct, JioTV, and more. Find now playing, upcoming, and catch-up programs for all major channels with full date and time listings.">
+  <meta name="keywords" content="tata play epg, indian tv channels epg, tv channels epg, tata play epg india, sun direct epg, jiotv epg, live schedule tv channels, tv channels schedule, hindi tv channel schedule, telugu tv channels, maa tv schedule, set schedule, indian channels, indian live tv, indian tv, tv schedule, tata play, tata play schedule, live tv schedule, india live tv, epg, teleguide, tsepg">
+  <meta name="author" content="EPG Viewer">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📺</text></svg>">
 
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary-color: #673ab7; /* Material Deep Purple */
+      --primary-color: #673ab7;
       --primary-dark: #512da8;
-      --accent-color: #ff4081; /* Material Pink */
-      --background-color: #f5f5f5; /* Material Grey */
+      --accent-color: #ff4081;
+      --background-color: #f4f5f7;
       --card-background: #ffffff;
       --text-color: #212121;
-      --text-light: #757575;
+      --text-light: #616161;
       --border-color: #e0e0e0;
       --live-red: #f44336;
       --ripple-color: rgba(255, 255, 255, 0.4);
-      /* Material Design Shadows (Elevation) */
       --shadow-1dp: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
       --shadow-2dp: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
       --shadow-4dp: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
     }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    body.dark-mode {
+      --primary-color: #7e57c2;
+      --primary-dark: #673ab7;
+      --accent-color: #f06292;
+      --background-color: #121212;
+      --card-background: #1e1e1e;
+      --text-color: #e0e0e0;
+      --text-light: #9e9e9e;
+      --border-color: #424242;
+      --ripple-color: rgba(0, 0, 0, 0.3);
     }
-    html {
-      scroll-behavior: smooth;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Inter', 'Roboto', sans-serif;
       background-color: var(--background-color);
       color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-    .hidden {
-      display: none !important;
-    }
-    /* Ripple Effect Base */
-    .ripple-container {
-        position: relative;
-        overflow: hidden;
-    }
+    .hidden { display: none !important; }
+    .ripple-container { position: relative; overflow: hidden; }
     .ripple {
-        position: absolute;
-        border-radius: 50%;
-        background-color: var(--ripple-color);
-        transform: scale(0);
-        animation: ripple-animation 0.6s linear;
+      position: absolute; border-radius: 50%;
+      background-color: var(--ripple-color);
+      transform: scale(0); animation: ripple-animation 0.6s linear;
     }
-    @keyframes ripple-animation {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
+    @keyframes ripple-animation { to { transform: scale(4); opacity: 0; } }
+
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      background-color: var(--primary-color);
-      color: white;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: var(--shadow-2dp);
+      display: flex; flex-wrap: wrap;
+      justify-content: space-between; align-items: center;
+      gap: 1rem; padding: 1rem 1.5rem;
+      background-color: var(--primary-color); color: white;
+      position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-2dp);
+      transition: background-color 0.3s;
     }
-    header h1 {
-      font-size: 1.4rem;
-      font-weight: 500;
-    }
-    .datetime {
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
+    header h1 { font-size: 1.3rem; font-weight: 700; }
+    .header-right { display: flex; align-items: center; gap: 1.5rem; }
+    .datetime { font-size: 0.85rem; text-align: right; opacity: 0.9; }
     .controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      gap: 1.25rem;
-      background-color: var(--card-background);
+      display: flex; flex-wrap: wrap; align-items: center; padding: 1rem 1.5rem;
+      gap: 1rem; background-color: var(--card-background);
       border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.3s, border-color 0.3s;
     }
-    #search-box {
-      flex-grow: 1;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      min-width: 150px;
-      transition: box-shadow 0.2s ease;
+    #search-box, select, .control-btn {
+      padding: 0.75rem 1rem; font-size: 0.95rem; border: 1px solid var(--border-color);
+      border-radius: 8px; background-color: var(--background-color);
+      color: var(--text-color); transition: all 0.2s ease;
     }
+    #search-box { flex-grow: 1; min-width: 150px; }
     #search-box:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(103, 58, 183, 0.3);
+      outline: none; border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.3);
     }
-    select, .control-btn {
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      font-weight: 500;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      background-color: var(--background-color);
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    select:hover, .control-btn:hover {
-      background-color: #e8e8e8;
-    }
+    select, .control-btn { cursor: pointer; }
+    select:hover, .control-btn:hover { background-color: var(--border-color); }
     .btn-primary {
-      background-color: var(--primary-color);
-      color: white;
-      border-color: var(--primary-color);
+      background-color: var(--primary-color); color: white; border-color: var(--primary-color);
       box-shadow: var(--shadow-1dp);
-      transition: background-color 0.2s ease, box-shadow 0.2s ease;
     }
-    .btn-primary:hover {
-      background-color: var(--primary-dark);
-      box-shadow: var(--shadow-2dp);
-    }
-    main {
-      padding: 1.5rem;
-    }
+    .btn-primary:hover { background-color: var(--primary-dark); box-shadow: var(--shadow-2dp); }
+
+    main { padding: 1.5rem; }
     #channel-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1.5rem;
     }
     .channel-card {
-      background: var(--card-background);
-      border-radius: 12px;
-      box-shadow: var(--shadow-1dp);
+      background: var(--card-background); border-radius: 12px; box-shadow: var(--shadow-1dp);
       transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
+      display: flex; flex-direction: column; cursor: pointer;
     }
-    .channel-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-4dp);
-    }
+    .channel-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-4dp); }
     .logo-container {
-      background-color: #fafafa;
-      padding: 1rem;
-      height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
+      background-color: #fafafa; padding: 1rem; height: 120px;
+      display: flex; align-items: center; justify-content: center;
+      border-top-left-radius: 12px; border-top-right-radius: 12px;
     }
-    .channel-logo {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    .channel-info {
-      padding: 1.25rem;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .channel-name {
-      font-weight: 500;
-      font-size: 1.2rem;
-      margin-bottom: 0.75rem;
-    }
-    .program-preview {
-      font-size: 0.9rem;
-      color: var(--text-light);
-      margin-bottom: 1rem;
-    }
-    .program-preview p {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin-bottom: 0.25rem;
-    }
-    .program-preview b {
-      color: var(--text-color);
-      font-weight: 500;
-    }
-    .view-btn-placeholder { /* A non-clickable visual placeholder */
-      background: var(--primary-color);
-      color: white;
-      padding: 0.75rem;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 500;
-      margin-top: auto;
-    }
-    #loader {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      gap: 1rem;
-      padding: 4rem;
-    }
-    .spinner {
-      border: 4px solid rgba(0,0,0,0.1);
-      border-left-color: var(--primary-color);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .channel-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .channel-info { padding: 1.25rem; flex-grow: 1; display: flex; flex-direction: column; }
+    .channel-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.75rem; }
+    .program-preview { font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem; }
+    .program-preview p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.25rem; }
+    .program-preview b { color: var(--text-color); font-weight: 500; }
+    .view-btn-placeholder {
+      background: var(--primary-color); color: white; padding: 0.75rem;
+      border-radius: 8px; text-align: center; font-size: 1rem;
+      font-weight: 500; margin-top: auto;
     }
 
-    /* Schedule View Styles */
-    #schedule-view {
-      padding: 1rem;
-      max-width: 900px;
-      margin: 0 auto;
+    #loader {
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column; gap: 1rem; padding: 4rem;
     }
+    .spinner {
+      border: 4px solid rgba(0,0,0,0.1); border-left-color: var(--primary-color);
+      border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #error-container {
+        text-align: center; padding: 2rem; margin: 1.5rem;
+        background-color: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.4);
+        border-radius: 8px; color: var(--live-red);
+    }
+
+    #schedule-view { padding: 1rem; max-width: 900px; margin: 0 auto; }
     .schedule-header {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);
     }
-    .schedule-header img {
-      height: 60px;
-      max-width: 150px;
-      object-fit: contain;
-    }
-    .schedule-header h2 {
-      font-size: 2rem;
-      font-weight: 400;
-    }
-    .back-btn {
-      margin-left: auto;
-    }
-    .program-section {
-      margin-bottom: 2.5rem;
-    }
+    .schedule-header img { height: 60px; max-width: 150px; object-fit: contain; background-color: #fff; border-radius: 8px; padding: 5px;}
+    .schedule-header h2 { font-size: 2rem; font-weight: 700; }
+    .back-btn { margin-left: auto; }
+    .program-section { margin-bottom: 2.5rem; }
     .program-section-title {
-      font-size: 1.25rem;
-      font-weight: 500;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid var(--primary-color);
-      color: var(--primary-color);
-      display: flex;
-      align-items: center;
+      font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;
+      padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-color);
+      color: var(--primary-color); display: flex; align-items: center;
     }
     .live-dot {
-        width: 10px;
-        height: 10px;
-        background-color: var(--live-red);
-        border-radius: 50%;
-        margin-left: 10px;
-        animation: blink 1.5s infinite ease-in-out;
+      width: 10px; height: 10px; background-color: var(--live-red);
+      border-radius: 50%; margin-left: 10px; animation: blink 1.5s infinite ease-in-out;
     }
-    @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
-    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .now-playing-card {
-      background: var(--card-background);
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: var(--shadow-2dp);
-      border-left: 5px solid var(--live-red);
+      background: var(--card-background); border-radius: 12px; padding: 1.5rem;
+      box-shadow: var(--shadow-2dp); border-left: 5px solid var(--live-red);
     }
-    .now-playing-card h3 {
-      font-size: 1.5rem;
-      font-weight: 500;
-      margin-bottom: 0.25rem;
-    }
-    .now-playing-card .program-time-display {
-      font-size: 1rem;
-      color: var(--text-light);
-      margin-bottom: 1rem;
-    }
+    .now-playing-card h3 { font-size: 1.5rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .now-playing-card .program-time-display { font-size: 1rem; color: var(--text-light); margin-bottom: 1rem; }
     .progress-bar-container {
-      width: 100%;
-      background-color: #e0e0e0;
-      border-radius: 8px;
-      height: 8px;
-      overflow: hidden;
-      margin: 1rem 0;
+      width: 100%; background-color: var(--border-color); border-radius: 8px;
+      height: 8px; overflow: hidden; margin: 1rem 0;
     }
     .progress-bar-inner {
-      height: 100%;
-      width: 0%;
-      background: var(--primary-color);
-      border-radius: 8px;
-      transition: width 1s linear;
+      height: 100%; width: 0%; background: var(--primary-color);
+      border-radius: 8px; transition: width 1s linear;
     }
+    /* NEW: Style for program date headers */
     .program-date-header {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: var(--text-light);
-        padding: 0.75rem 0;
-        margin-top: 1rem;
+        font-size: 1rem; font-weight: 700; color: var(--text-light);
+        padding: 0.75rem; background-color: var(--background-color);
+        border-radius: 8px; margin: 1.5rem 0 0.5rem 0;
     }
-    .program-list {
-      list-style-type: none;
-      background: var(--card-background);
-      border-radius: 12px;
-      box-shadow: var(--shadow-1dp);
-    }
+    .program-list { list-style-type: none; background: var(--card-background); border-radius: 12px; box-shadow: var(--shadow-1dp); overflow: hidden;}
     .program-item {
-      display: flex;
-      gap: 1.5rem;
-      padding: 1.25rem;
-      border-bottom: 1px solid var(--border-color);
+      display: flex; gap: 1rem; padding: 1.25rem; border-bottom: 1px solid var(--border-color);
+      align-items: flex-start;
     }
-    .program-item:last-child {
-        border-bottom: none;
-    }
+    .program-item:last-child { border-bottom: none; }
     .program-time {
-      font-weight: 500;
-      white-space: nowrap;
-      font-size: 0.95rem;
-      flex-shrink: 0;
-      width: 120px;
+      font-weight: 500; white-space: nowrap; font-size: 0.9rem;
+      flex-shrink: 0; width: 130px; color: var(--text-light);
     }
-    .program-details h3 {
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin-bottom: 0.25rem;
+    .program-details h3 { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .program-details p { font-size: 0.9rem; color: var(--text-light); line-height: 1.5; }
+
+    /* NEW: Theme Toggle Switch */
+    .theme-switch-wrapper { display: flex; align-items: center; }
+    .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; }
+    .theme-switch input { display:none; }
+    .slider {
+      background-color: var(--primary-dark); cursor: pointer;
+      position: absolute; inset: 0; border-radius: 34px; transition: .4s;
     }
-    .program-details p {
-      font-size: 0.9rem;
-      color: var(--text-light);
-      line-height: 1.5;
+    .slider:before {
+      background-color: #fff; bottom: 4px; content: ""; height: 16px;
+      left: 4px; position: absolute; transition: .4s; width: 16px;
+      border-radius: 50%;
     }
+    input:checked + .slider { background-color: #ccc; }
+    input:checked + .slider:before { transform: translateX(20px); background-color: var(--primary-dark);}
+
+    /* NEW: Back to Top Button */
+    #back-to-top-btn {
+      position: fixed; bottom: 20px; right: 20px;
+      width: 50px; height: 50px; border-radius: 50%;
+      background-color: var(--primary-color); color: white;
+      border: none; cursor: pointer; font-size: 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-4dp); opacity: 0; visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s, background-color 0.3s;
+    }
+    #back-to-top-btn.show { opacity: 1; visibility: visible; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Enhanced EPG Viewer</h1>
-    <div class="datetime" id="datetime"></div>
+    <h1>INDIAN TV CHANNELS EPG TELEGUIDE</h1>
+    <div class="header-right">
+      <div class="datetime" id="datetime"></div>
+      <!-- NEW: Theme Toggle -->
+      <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="theme-toggle">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
   </header>
 
   <div class="controls">
-    <label for="source-select">Source:</label>
     <select id="source-select" class="ripple-container">
-      <option value="tsepg">TSEPG</option>
-      <option value="tsaio">TSAIO</option>
-      <option value="jiotv">JioTV</option>
+      <option value="tsepg">Tata Play EPG</option>
+      <option value="tsaio">Sun Direct EPG</option>
+      <option value="jiotv">JioTV EPG</option>
     </select>
-    <label for="sort-select">Sort:</label>
     <select id="sort-select" class="ripple-container">
       <option value="az">Name A-Z</option>
       <option value="za">Name Z-A</option>
@@ -376,11 +256,15 @@
       <div class="spinner"></div>
       <p>Loading EPG Data...</p>
     </div>
+    <div id="error-container" class="hidden"></div>
     <div id="channel-grid-view" class="hidden">
       <div id="channel-grid"></div>
     </div>
     <div id="schedule-view" class="hidden"></div>
   </main>
+
+  <!-- NEW: Back to Top Button -->
+  <button id="back-to-top-btn" title="Go to top">↑</button>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -393,7 +277,10 @@
       const channelGrid = document.getElementById('channel-grid');
       const scheduleView = document.getElementById('schedule-view');
       const loader = document.getElementById('loader');
+      const errorContainer = document.getElementById('error-container');
       const datetimeEl = document.getElementById('datetime');
+      const themeToggle = document.getElementById('theme-toggle');
+      const backToTopBtn = document.getElementById('back-to-top-btn');
 
       // --- Application State ---
       const appState = {
@@ -404,24 +291,26 @@
 
       // --- Ripple Effect ---
       function createRipple(event) {
-          const container = event.currentTarget;
-          const circle = document.createElement("span");
-          const diameter = Math.max(container.clientWidth, container.clientHeight);
-          const radius = diameter / 2;
-          circle.style.width = circle.style.height = `${diameter}px`;
-          const rect = container.getBoundingClientRect();
-          circle.style.left = `${event.clientX - rect.left - radius}px`;
-          circle.style.top = `${event.clientY - rect.top - radius}px`;
-          circle.classList.add("ripple");
-          const existingRipple = container.querySelector(".ripple");
-          if (existingRipple) existingRipple.remove();
-          container.appendChild(circle);
+        const container = event.currentTarget;
+        const circle = document.createElement("span");
+        const diameter = Math.max(container.clientWidth, container.clientHeight);
+        const radius = diameter / 2;
+        circle.style.width = circle.style.height = `${diameter}px`;
+        const rect = container.getBoundingClientRect();
+        circle.style.left = `${event.clientX - rect.left - radius}px`;
+        circle.style.top = `${event.clientY - rect.top - radius}px`;
+        circle.classList.add("ripple");
+        const existingRipple = container.querySelector(".ripple");
+        if (existingRipple) existingRipple.remove();
+        container.appendChild(circle);
       }
 
       // --- Initialization ---
       function initialize() {
+        // Clock
         updateClock();
         setInterval(updateClock, 1000);
+        
         // Add listeners to static elements
         document.querySelectorAll('.ripple-container').forEach(el => {
             el.addEventListener('click', createRipple);
@@ -430,28 +319,69 @@
         fetchBtn.addEventListener('click', () => loadCurrentSource(true));
         sortSelect.addEventListener('change', renderChannelGrid);
         searchBox.addEventListener('input', renderChannelGrid);
+        
+        // NEW: Initialize new features
+        initializeTheme();
+        initializeScrollFeatures();
+
+        // Initial data load
         loadCurrentSource(false);
+      }
+
+      // --- NEW Features: Theme & Scroll ---
+      function initializeTheme() {
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        } else if (savedTheme === 'light') {
+            document.body.classList.remove('dark-mode');
+            themeToggle.checked = false;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+             // Default to user's system preference
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        }
+      }
+
+      function initializeScrollFeatures() {
+        backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 300) {
+            backToTopBtn.classList.add('show');
+          } else {
+            backToTopBtn.classList.remove('show');
+          }
+        });
       }
 
       // --- Clock ---
       function updateClock() {
-        datetimeEl.textContent = new Date().toLocaleString('en-US', {
+        datetimeEl.innerHTML = new Date().toLocaleString('en-US', {
           dateStyle: 'full', timeStyle: 'medium'
-        });
+        }).replace(/, /g, '<br>');
       }
 
-      // --- Data Fetching and Processing (UNCHANGED) ---
+      // --- Data Fetching and Processing ---
       async function loadCurrentSource(force = false) {
         const source = sourceSelect.value;
+        const sourceName = sourceSelect.options[sourceSelect.selectedIndex].text;
         searchBox.value = '';
         if (!force && appState.fetchedData.has(source)) {
           appState.channels = appState.fetchedData.get(source);
           renderChannelGrid();
         } else {
-          await fetchAndProcessEPG(source);
+          await fetchAndProcessEPG(source, sourceName);
         }
       }
-      async function fetchAndProcessEPG(source) {
+
+      async function fetchAndProcessEPG(source, sourceName) {
         const url = `https://tp-epg.bhargavtodimela4.workers.dev/?source=${source}`;
         showLoader(true);
         showView('none');
@@ -463,7 +393,7 @@
           const xmlStr = new TextDecoder().decode(decompressed);
           const parser = new DOMParser();
           const xmlDoc = parser.parseFromString(xmlStr, "application/xml");
-          if (xmlDoc.getElementsByTagName("parsererror").length) throw new Error("Failed to parse XML data.");
+          if (xmlDoc.getElementsByTagName("parsererror").length) throw new Error("Failed to parse the EPG data. It might be malformed.");
           const channelNodes = xmlDoc.querySelectorAll("channel");
           const programNodes = xmlDoc.querySelectorAll("programme");
           const programMap = new Map();
@@ -481,13 +411,13 @@
           renderChannelGrid();
         } catch (err) {
           console.error("Error loading EPG:", err);
-          showError(`Failed to load EPG for "${source}".<br>${err.message}`);
+          showError(`Failed to load EPG for "${sourceName}".<br>${err.message}`);
         } finally {
           showLoader(false);
         }
       }
 
-      // --- Rendering Logic (Functionality UNCHANGED, HTML structure slightly updated for style) ---
+      // --- Rendering Logic ---
       function renderChannelGrid() {
         clearInterval(appState.progressInterval);
         showView('grid');
@@ -497,13 +427,14 @@
         const filteredChannels = appState.channels.filter(ch => ch.name.toLowerCase().includes(searchTerm));
         filteredChannels.sort((a, b) => sortOrder === 'az' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
         if (filteredChannels.length === 0) {
-          channelGrid.innerHTML = `<p style="text-align: center; color: var(--text-light);">No channels found matching your criteria.</p>`;
+          channelGrid.innerHTML = `<p style="text-align: center; color: var(--text-light); grid-column: 1 / -1;">No channels found matching your criteria.</p>`;
           return;
         }
         filteredChannels.forEach(channel => fragment.appendChild(createChannelCard(channel)));
         channelGrid.innerHTML = '';
         channelGrid.appendChild(fragment);
       }
+
       function createChannelCard(channel) {
           const card = document.createElement('div');
           card.className = 'channel-card ripple-container';
@@ -518,7 +449,7 @@
                 <p><b>Now:</b> ${now ? now.title : 'N/A'}</p>
                 <p><b>Next:</b> ${next ? next.title : 'N/A'}</p>
               </div>
-              <div class="view-btn-placeholder">View Schedule</div>
+              <div class="view-btn-placeholder">View Full Schedule</div>
             </div>`;
           card.addEventListener('click', (e) => {
               createRipple(e);
@@ -526,6 +457,7 @@
           });
           return card;
       }
+
       function renderScheduleView(channelId) {
         const channel = appState.channels.find(c => c.id === channelId);
         if (!channel) return showError("Could not find channel data.");
@@ -560,7 +492,7 @@
             <div class="schedule-header">
                 <img src="${channel.logo}" alt="${channel.name} Logo">
                 <h2>${channel.name}</h2>
-                <button class="control-btn back-btn ripple-container">← Back to List</button>
+                <button class="control-btn back-btn ripple-container">← Back</button>
             </div>
             ${nowPlayingHtml}
             ${generateProgramListHtml(upcomingPrograms, "Upcoming")}
@@ -572,30 +504,49 @@
         });
         window.scrollTo(0, 0);
       }
+      
+      // REWRITTEN to correctly insert date headers
       function generateProgramListHtml(programs, title) {
           if (programs.length === 0) return '';
+          let listHtml = '';
           let lastDateStr = null;
-          const programItemsHtml = programs.map(prog => {
+          const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+          for (const prog of programs) {
               const startDate = parseDate(prog.start);
-              const dateStr = startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-              let dateHeader = '';
+              const dateStr = startDate.toLocaleDateString('en-US', dateOptions);
+
               if (dateStr !== lastDateStr) {
-                  dateHeader = `<h3 class="program-date-header">${dateStr}</h3>`;
+                  listHtml += `<h3 class="program-date-header">${dateStr}</h3>`;
                   lastDateStr = dateStr;
               }
-              return `<li class="program-item"><div class="program-time">${formatTime(startDate)} - ${formatTime(parseDate(prog.stop))}</div><div class="program-details"><h3>${prog.title}</h3><p>${prog.desc}</p></div></li>`;
-          }).join('');
-          return `<div class="program-section"><h2 class="program-section-title">${title}</h2><ul class="program-list">${programItemsHtml}</ul></div>`;
+              
+              const stopDate = parseDate(prog.stop);
+              listHtml += `
+                <li class="program-item">
+                    <div class="program-time">${formatTime(startDate)} - ${formatTime(stopDate)}</div>
+                    <div class="program-details">
+                        <h3>${prog.title}</h3>
+                        <p>${prog.desc}</p>
+                    </div>
+                </li>`;
+          }
+          
+          return `<div class="program-section">
+                    <h2 class="program-section-title">${title}</h2>
+                    <ul class="program-list">${listHtml}</ul>
+                  </div>`;
       }
+
       function startProgressBar(program) {
         clearInterval(appState.progressInterval);
         const progressBar = document.getElementById('progress-bar-inner');
         if (!progressBar) return;
         const startTime = parseDate(program.start).getTime();
         const stopTime = parseDate(program.stop).getTime();
-        if (isNaN(startTime) || isNaN(stopTime)) return;
+        if (isNaN(startTime) || isNaN(stopTime) || stopTime <= startTime) return;
         const duration = stopTime - startTime;
-        if (duration <= 0) return;
+        
         const update = () => {
           const elapsed = new Date().getTime() - startTime;
           let progress = (elapsed / duration) * 100;
@@ -603,18 +554,24 @@
           progressBar.style.width = `${progress}%`;
           if (progress >= 100) clearInterval(appState.progressInterval);
         };
+
         update();
         appState.progressInterval = setInterval(update, 1000);
       }
 
-      // --- UI Helpers & Utilities (UNCHANGED) ---
+      // --- UI Helpers & Utilities ---
       function showView(view) {
+        errorContainer.classList.add('hidden'); // Hide error on view change
         channelGridView.classList.toggle('hidden', view !== 'grid');
         scheduleView.classList.toggle('hidden', view !== 'schedule');
         if (view === 'none') { channelGridView.classList.add('hidden'); scheduleView.classList.add('hidden'); }
       }
       function showLoader(isLoading) { loader.classList.toggle('hidden', !isLoading); }
-      function showError(message) { mainContent.innerHTML = `<div style="color:red;text-align:center;padding:2rem;background-color:#fff1f1;border:1px solid #ffcccc;border-radius:8px;">${message}</div>`; }
+      function showError(message) {
+        showView('none');
+        errorContainer.innerHTML = message;
+        errorContainer.classList.remove('hidden');
+      }
       function findNowNext(programs) {
           const now = new Date();
           let currentProgram = null, nextProgram = null;
